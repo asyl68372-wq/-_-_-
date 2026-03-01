@@ -1,33 +1,40 @@
 import streamlit as st
-import fitz  # مكتبة PyMuPDF
+import fitz  # PyMuPDF
 from PIL import Image
+import os
 
-# إعدادات الصفحة
-st.set_page_config(page_title="المكتبة الشاملة", page_icon="📖")
+# 1. إعدادات الصفحة باسم الوالد (تظهر في تبويب المتصفح)
+st.set_page_config(page_title="Rashid's Holy Library", page_icon="📖")
 
-st.title("📖 تطبيق عرض الكتب المقدسة")
-st.write("اختر الكتاب الذي تريد تصفحه من القائمة أدناه.")
+# 2. تصميم الواجهة العلوية (Header)
+st.title("📖 Rashid's Holy Library")
+st.markdown("### *Dedicated to my beloved father, Rashid*")
+st.info("Choose a book and enter the page number to start reading.")
 
-# قاموس يربط اسم الكتاب باسم الملف الموجود عندك في المجلد
+# 3. قاموس الكتب (تأكد من مطابقة أسماء الملفات في GitHub تماماً)
 books_config = {
-    "القرآن الكريم (التفسير الميسر)": "Tafseer_Muyassar__1440.pdf",
-    "إنجيل متى": "matthew.pdf",
-    "إنجيل مرقس": "mark.pdf",
-    "إنجيل لوقا": "luke.pdf",
-    "إنجيل يوحنا": "john.pdf"
+    "Holy Quran (Tafseer)": "Tafseer_Muyassar__1440.pdf",
+    "Gospel of Matthew": "matthew.pdf",
+    "Gospel of Mark": "mark.pdf",
+    "Gospel of Luke": "luke.pdf",
+    "Gospel of John": "john.pdf"
 }
 
-# دالة استخراج الصفحة وتحويلها لصورة
+# 4. دالة استخراج الصفحة (مع تحسين جودة الخط لراحة عين الوالد)
 def get_pdf_page(pdf_path, page_num):
     try:
+        # التأكد من وجود الملف قبل محاولة فتحه لتجنب الخطأ الذي ظهر لك
+        if not os.path.exists(pdf_path):
+            return "file_not_found", 0
+            
         doc = fitz.open(pdf_path)
-        # التأكد من أن رقم الصفحة موجود في الملف
         if page_num > len(doc) or page_num < 1:
             return "out_of_range", len(doc)
             
         page = doc.load_page(page_num - 1) 
-        # زيادة الدقة لجعل النص واضحاً
-        zoom = 2 
+        
+        # زيادة التكبير (Zoom) ليكون النص كبيراً جداً للوالد
+        zoom = 2.5 
         mat = fitz.Matrix(zoom, zoom)
         pix = page.get_pixmap(matrix=mat)
         
@@ -36,26 +43,32 @@ def get_pdf_page(pdf_path, page_num):
     except Exception as e:
         return str(e), 0
 
-# واجهة المستخدم: اختيار الكتاب
-selected_book_name = st.selectbox("اختر الكتاب:", list(books_config.keys()))
+# 5. واجهة المستخدم باللغة الإنجليزية
+col1, col2 = st.columns([2, 1])
 
-# واجهة المستخدم: إدخال رقم الصفحة
-page_input = st.number_input("أدخل رقم الصفحة:", min_value=1, value=1, step=1)
+with col1:
+    selected_book_name = st.selectbox("Select the Book:", list(books_config.keys()))
 
-if st.button("عرض الصفحة الآن"):
-    # جلب اسم الملف بناءً على اختيار المستخدم
+with col2:
+    page_input = st.number_input("Page Number:", min_value=1, value=1, step=1)
+
+# 6. زر العرض (Display Button)
+if st.button("Display Page Now"):
     pdf_file = books_config[selected_book_name]
     
-    with st.spinner(f'جاري فتح {selected_book_name}...'):
+    with st.spinner(f'Opening {selected_book_name}...'):
         result, total_pages = get_pdf_page(pdf_file, page_input)
         
         if isinstance(result, Image.Image):
-            st.success(f"تم عرض صفحة {page_input} من أصل {total_pages} صفحة")
-            st.image(result, caption=f"{selected_book_name} - صفحة رقم {page_input}", use_container_width=True)
+            st.success(f"Page {page_input} of {total_pages}")
+            st.image(result, caption=f"{selected_book_name} - Page {page_input}", use_container_width=True)
         elif result == "out_of_range":
-            st.error(f"رقم الصفحة غير موجود. هذا الكتاب يحتوي على {total_pages} صفحة فقط.")
+            st.error(f"Page number not found. This book has only {total_pages} pages.")
+        elif result == "file_not_found":
+            st.error(f"Error: File '{pdf_file}' not found. Please upload it to GitHub in the main directory.")
         else:
-            st.error(f"خطأ: لم يتم العثور على الملف '{pdf_file}'. تأكد من وجوده في المجلد بجانب الكود.")
+            st.error(f"An unexpected error occurred: {result}")
 
+# 7. التذييل (Footer)
 st.divider()
-st.caption("التطبيق يدعم الآن القرآن الكريم والأناجيل الأربعة من ملفاتك المحلية.")
+st.caption("Developed with love for Rashid | 2026")
