@@ -7,9 +7,9 @@ import os
 st.set_page_config(page_title="Rashid's Holy Library", page_icon="📖")
 
 # 2. تصميم الواجهة العلوية (Header)
-st.title("📖 Rashid's Holy Library")
-st.markdown("### *Dedicated to my beloved father, Rashid*")
-st.info("Choose a book and enter the page number to start reading.")
+st.title("📖فهرس النصوص المقدسه")
+st.markdown("### *...يتواجد فيها الاناجيل الاربعه والتوراه قريبا*")
+st.info("تم تصميم والاستعانه بفكره ابي حفظه الله...اختار الكتاب ورقم الصفحه.")
 
 # 3. قاموس الكتب (تأكد من مطابقة أسماء الملفات في GitHub تماماً)
 books_config = {
